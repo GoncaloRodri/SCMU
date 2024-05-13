@@ -26,7 +26,6 @@ const SignIn = () => {
     try {
       const user = await doSignInWithEmailAndPassword(email, password);
       setLoading(false);
-      alert("YOU SIGNED IN");
       navigation.reset({ index: 0, routes: [{ name: "TabNavigator" }] });
     } catch (error) {
       setLoading(false);
