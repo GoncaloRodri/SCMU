@@ -1,6 +1,14 @@
 {
   "expo": {
-    "plugins": ["@react-native-google-signin/google-signin"],
+    "plugins": [
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-font",
+        {
+          "fonts": ["../assets/fonts/TitanOne-Regular.ttf"]
+        }
+      ]
+    ],
     "name": "mobile_app",
     "slug": "mobile_app",
     "version": "1.0.0",

@@ -7,46 +7,58 @@ import {
   Image,
 } from "react-native";
 import React, { useState, useEffect } from "react";
-import { doSignInWithEmailAndPassword } from "../services/auth";
+import { app } from "../services/firebaseConfig";
+import { doCreateUserWithEmailAndPassword } from "../services/auth";
 import { useNavigation } from "@react-navigation/native";
 
-const SignIn = () => {
+const Register = () => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation();
 
-  const googleSignIn = () => {
-    //TODO
-  };
-
-  const doSignIn = async () => {
+  const doRegister = async () => {
     setLoading(true);
     try {
-      const user = await doSignInWithEmailAndPassword(email, password);
+      const user = await doCreateUserWithEmailAndPassword(email, password);
+      if (user) {
+        const id = user.uid;
+        handleAddUser();
+      }
       setLoading(false);
-      alert("YOU SIGNED IN");
       navigation.reset({ index: 0, routes: [{ name: "TabNavigator" }] });
     } catch (error) {
       setLoading(false);
-      if (
-        error.code === "auth/user-not-found" ||
-        error.code === "auth/wrong-password"
-      ) {
-        alert("Invalid email or password");
-      } else if (error.code === "auth/too-many-requests") {
-        alert("Too many unsuccessful attempts. Try again later");
+      //TODO Handle error handling
+      if (error.code === "auth/email-already-in-use") {
+        alert("This email is already used");
+      } else if (error.code === "auth/weak-password") {
+        alert("Weak password. Please choose a stronger password");
       } else {
-        alert("Sign in error: " + error.message);
+        alert("Register error: " + error.message);
       }
     }
   };
 
+  const handleAddUser = () => {
+    app.firestore().collection("users").doc(email).set({
+      username,
+      email,
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
+      <Text style={styles.title}>Register</Text>
       <View style={styles.inputView}>
+        <TextInput
+          placeholder="Name"
+          style={styles.input}
+          value={username}
+          onChangeText={setUsername}
+        />
         <TextInput
           placeholder="Email"
           style={styles.input}
@@ -61,7 +73,6 @@ const SignIn = () => {
           onChangeText={setPassword}
         />
       </View>
-
       <View
         style={{
           justifyContent: "center",
@@ -70,8 +81,8 @@ const SignIn = () => {
           top: 120,
         }}
       >
-        <TouchableOpacity style={styles.signInButton} onPress={doSignIn}>
-          <Text style={styles.signInButtonText}>Sign In</Text>
+        <TouchableOpacity style={styles.signInButton} onPress={doRegister}>
+          <Text style={styles.signInButtonText}>Register</Text>
         </TouchableOpacity>
         <Text style={{ fontWeight: "bold", fontSize: 20 }}>OR</Text>
         <TouchableOpacity style={styles.googleButton}>
@@ -80,7 +91,7 @@ const SignIn = () => {
               source={require("../assets/google-icon.png")}
               style={styles.googleIcon}
             />
-            <Text style={styles.googleButtonText}>Sign In with Google</Text>
+            <Text style={styles.googleButtonText}>Register with Google</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -88,7 +99,7 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default Register;
 
 const styles = StyleSheet.create({
   container: {
@@ -108,7 +119,7 @@ const styles = StyleSheet.create({
   inputView: {
     width: "90%",
     position: "absolute",
-    top: 300,
+    top: 200,
   },
   input: {
     backgroundColor: "white",
