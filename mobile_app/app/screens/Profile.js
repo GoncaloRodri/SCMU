@@ -1,12 +1,102 @@
-import { View, Text } from 'react-native'
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
+import { useAuth } from '../contexts/authContexts'
+import { useNavigation } from '@react-navigation/native'
 
 const Profile = () => {
+  const { userData } = useAuth();
+
+  const navigation = useNavigation();
+
   return (
-    <View>
-      <Text>Profile</Text>
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.profilePicBack}>
+        <Image source={require("../assets/no-profile-pic.png")} style={styles.profilePic} />
+      </TouchableOpacity>
+      <Text style={styles.title}>{userData.username}</Text>
+      <View style={styles.locationView}>
+        <Image source={require("../assets/location-icon.png")} style={styles.locationIcon} />
+        <Text style={styles.locationText}>FCT</Text>
+      </View>
+      <View style={styles.buttonView}>
+        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <TouchableOpacity onPress={() => navigation.navigate("PersonalInformation")}>
+          <Text style={styles.settingsText}>Personal Information</Text>
+        </TouchableOpacity>
+        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
+          <Text style={styles.settingsText}>Notifications</Text>
+        </TouchableOpacity>
+        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <TouchableOpacity onPress={() => navigation.navigate("Saved")}>
+          <Text style={styles.settingsText}>Saved</Text>
+        </TouchableOpacity>
+        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <TouchableOpacity onPress={() => navigation.navigate("History")}>
+          <Text style={styles.settingsText}>History</Text>
+        </TouchableOpacity>
+        <View style={{ borderWidth: 0.6, width: 330 }} />
+      </View>
     </View>
   )
 }
 
 export default Profile
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "column",
+    backgroundColor: "#e0f4fe",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "black",
+    top: 170,
+    position: "absolute",
+  },
+  profilePic: {
+    width: 60,
+    height: 60,
+  },
+  profilePicBack: {
+    backgroundColor: "white",
+    width: 100,
+    height: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 100,
+    position: "absolute",
+    top: 60,
+  },
+  locationView: {
+    flexDirection: "row",
+    justifyContent: "center",
+    position: "absolute",
+    top: 230
+  },
+  locationIcon: {
+    width: 18,
+    height: 18
+  },
+  locationText: {
+    fontSize: 14,
+    color: "grey",
+    marginLeft: 5,
+  },
+  buttonView: {
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    top: 300,
+  },
+  settingsText: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "black",
+    padding: 15
+  },
+});

@@ -1,3 +1,4 @@
+import { LogBox } from "react-native";
 import React from "react";
 import WelcomeScreen from "./app/screens/WelcomeScreen";
 import SignIn from "./app/screens/SignIn";
@@ -5,11 +6,17 @@ import Register from "./app/screens/Register";
 import Home from "./app/screens/Home";
 import Search from "./app/screens/Search";
 import Profile from "./app/screens/Profile";
+import History from "./app/screens/History";
+import Notifications from "./app/screens/Notifications";
+import Saved from "./app/screens/Saved";
+import PersonalInformation from "./app/screens/PersonalInformation";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AuthProvider } from "./app/contexts/authContexts";
+
+LogBox.ignoreLogs(['@firebase/auth']);
 
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
@@ -47,13 +54,40 @@ const StackNavigator = () => {
         component={TabNavigator}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="PersonalInformation"
+        component={PersonalInformation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Saved"
+        component={Saved}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="History"
+        component={History}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Notifications"
+        component={Notifications}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };
 
 const TabNavigator = () => {
   return (
-    <Tab.Navigator labeled={true}>
+    <Tab.Navigator
+      initialRouteName="Home"
+      labeled={true}
+      barStyle={{ backgroundColor: "white" }}
+      shifting={true}
+      activeColor="black"
+      inactiveColor="black"
+    >
       <Tab.Screen
         name="Home"
         component={Home}

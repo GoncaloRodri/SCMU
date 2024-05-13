@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { doSignInWithEmailAndPassword } from "../services/auth";
@@ -65,8 +66,8 @@ const SignIn = () => {
         style={{
           justifyContent: "center",
           alignItems: "center",
-          position: "relative",
-          top: 120,
+          position: "absolute",
+          top: 220,
         }}
       >
         <TouchableOpacity style={styles.signInButton} onPress={doSignIn}>
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   inputView: {
     width: "90%",
     position: "absolute",
-    top: 300,
+    top: 200,
   },
   input: {
     backgroundColor: "white",

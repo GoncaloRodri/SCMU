@@ -3,8 +3,6 @@ import React, { useCallback } from "react";
 import { useFonts } from "expo-font";
 import { useNavigation } from "@react-navigation/native";
 
-const icon = require("../assets/favicon.png");
-
 const WelcomeScreen = () => {
   const [fontsLoaded, fontError] = useFonts({
     TitanOne: require("../assets/fonts/TitanOne-Regular.ttf"),
@@ -16,10 +14,6 @@ const WelcomeScreen = () => {
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-
   const navigation = useNavigation();
 
   const LoginHandler = () => {
@@ -29,6 +23,10 @@ const WelcomeScreen = () => {
   const RegisterHandler = () => {
     navigation.navigate("Register");
   };
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
