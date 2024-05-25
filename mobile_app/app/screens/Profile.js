@@ -10,8 +10,8 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.profilePicBack}>
-        <Image source={require("../assets/no-profile-pic.png")} style={styles.profilePic} />
+      <TouchableOpacity style={styles.profilePicBack} disabled>
+        <Image source={require("../assets/xandao-pic.png")} style={styles.profilePic} />
       </TouchableOpacity>
       <Text style={styles.title}>{userData.username}</Text>
       <View style={styles.locationView}>
@@ -19,23 +19,23 @@ const Profile = () => {
         <Text style={styles.locationText}>FCT</Text>
       </View>
       <View style={styles.buttonView}>
-        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <View style={{ borderWidth: 0.6, width: "115%" }} />
         <TouchableOpacity onPress={() => navigation.navigate("PersonalInformation")}>
           <Text style={styles.settingsText}>Personal Information</Text>
         </TouchableOpacity>
-        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <View style={{ borderWidth: 0.6, width: "115%" }} />
         <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
           <Text style={styles.settingsText}>Notifications</Text>
         </TouchableOpacity>
-        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <View style={{ borderWidth: 0.6, width: "115%" }} />
         <TouchableOpacity onPress={() => navigation.navigate("Saved")}>
           <Text style={styles.settingsText}>Saved</Text>
         </TouchableOpacity>
-        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <View style={{ borderWidth: 0.6, width: "115%" }} />
         <TouchableOpacity onPress={() => navigation.navigate("History")}>
           <Text style={styles.settingsText}>History</Text>
         </TouchableOpacity>
-        <View style={{ borderWidth: 0.6, width: 330 }} />
+        <View style={{ borderWidth: 0.6, width: "115%" }} />
       </View>
     </View>
   )
@@ -55,12 +55,13 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "black",
-    top: 170,
+    top: "23%",
     position: "absolute",
   },
   profilePic: {
-    width: 60,
-    height: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 100
   },
   profilePicBack: {
     backgroundColor: "white",
@@ -70,13 +71,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 100,
     position: "absolute",
-    top: 60,
+    top: "10%",
   },
   locationView: {
     flexDirection: "row",
     justifyContent: "center",
     position: "absolute",
-    top: 230
+    top: "28%"
   },
   locationIcon: {
     width: 18,
@@ -91,12 +92,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    top: 300,
+    bottom: "17%",
   },
   settingsText: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: "bold",
     color: "black",
-    padding: 15
+    padding: 25
   },
 });
