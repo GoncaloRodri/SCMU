@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, TextInput, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 
 const Search = () => {
@@ -13,7 +20,12 @@ const Search = () => {
           value={searchName}
           onChangeText={setSearchName}
         />
-        <Image source={require("../assets/location-icon.png")} style={styles.locationIcon}/>
+        <TouchableOpacity style={{alignItems: "center", justifyContent: "center", marginBottom: 20}} onPress={() => alert("DO STUFF HERE WITH MAP")}>
+          <Image
+            source={require("../assets/location-icon.png")}
+            style={styles.locationIcon}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -51,12 +63,12 @@ const styles = StyleSheet.create({
     color: "black",
     fontSize: 18,
     marginBottom: 15,
-    width: "75%"
+    width: "75%",
   },
   locationIcon: {
     width: 30,
     height: 30,
     marginTop: "2.5%",
-    marginLeft: "10%"
+    marginLeft: "10%",
   },
 });
