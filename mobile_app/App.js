@@ -10,13 +10,15 @@ import History from "./app/screens/History";
 import Notifications from "./app/screens/Notifications";
 import Saved from "./app/screens/Saved";
 import PersonalInformation from "./app/screens/PersonalInformation";
+import Map from "./app/screens/Map";
+import ParkingLot from "./app/screens/ParkingLot";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AuthProvider } from "./app/contexts/authContexts";
 
-LogBox.ignoreLogs(['@firebase/auth']);
+LogBox.ignoreLogs(["@firebase/auth"]);
 
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
@@ -72,6 +74,16 @@ const StackNavigator = () => {
       <Stack.Screen
         name="Notifications"
         component={Notifications}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Map"
+        component={Map}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ParkingLot"
+        component={ParkingLot}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

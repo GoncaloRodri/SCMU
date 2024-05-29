@@ -5,11 +5,39 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
+  FlatList,
+  Modal,
+  Pressable,
 } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { app } from "../services/firebaseConfig";
 
 const Search = () => {
-  const [searchName, setSearchName] = React.useState("");
+  const navigation = useNavigation();
+
+  const [searchName, setSearchName] = useState("");
+  const [parkingLots, setParkingLots] = useState([]);
+
+  useEffect(() => {
+    app
+      .firestore()
+      .collection("parkingLots")
+      .onSnapshot((querySnapshot) => {
+        const newParkingLots = [];
+        querySnapshot.forEach((doc) => {
+          const { description, location, title, link } = doc.data();
+          newParkingLots.push({
+            description,
+            location,
+            title,
+            link,
+            id: doc.id,
+          });
+        });
+        setParkingLots(newParkingLots);
+      });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -20,12 +48,36 @@ const Search = () => {
           value={searchName}
           onChangeText={setSearchName}
         />
-        <TouchableOpacity style={{alignItems: "center", justifyContent: "center", marginBottom: 20}} onPress={() => alert("DO STUFF HERE WITH MAP")}>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 20,
+          }}
+          onPress={() => navigation.navigate("Map")}
+        >
           <Image
             source={require("../assets/location-icon.png")}
             style={styles.locationIcon}
           />
         </TouchableOpacity>
+      </View>
+      <View style={styles.flatListView}>
+        <FlatList
+          data={parkingLots}
+          keyExtractor={(item) => item.id}
+          scrollEnabled={true}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ParkingLot", { item })}
+            >
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Image source={{ uri: item.link }} style={styles.cardImage} />
+              </View>
+            </TouchableOpacity>
+          )}
+        />
       </View>
     </View>
   );
@@ -38,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "column",
     backgroundColor: "#e0f4fe",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     alignItems: "center",
   },
   title: {
@@ -51,9 +103,8 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: "row",
     justifyContent: "center",
-    position: "absolute",
     width: "95%",
-    top: "10%",
+    marginTop: 60,
   },
   input: {
     backgroundColor: "white",
@@ -70,5 +121,32 @@ const styles = StyleSheet.create({
     height: 30,
     marginTop: "2.5%",
     marginLeft: "10%",
+  },
+  flatListView: {
+    flex: 1,
+    width: "90%",
+    marginTop: 20,
+  },
+  card: {
+    marginBottom: 20,
+    width: "100%",
+    height: 250,
+    textAlign: "left",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "black",
+    padding: 10,
+  },
+  cardDescription: {},
+  cardImage: {
+    width: "95%",
+    height: 200,
+    resizeMode: "cover",
+    alignSelf: "center",
+    borderRadius: 5,
   },
 });
