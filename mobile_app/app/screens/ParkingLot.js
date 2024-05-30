@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
 const ParkingLot = ({ route }) => {
-  const { description, title, location, link } = route.params.item;
+  const { description, title, location, link } = route.params.parkingLot;
 
   const navigation = useNavigation();
 
@@ -26,12 +26,14 @@ const ParkingLot = ({ route }) => {
           alert("START HEREEEEE PARKINGG");
         }}
       >
-        <Text style={styles.altButtonText}>Start Parking Here</Text>
+        <Text style={styles.altButtonText}>Save Parking Lot</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          navigation.navigate("Map");
+          navigation.navigate("Map", {
+            parkingLot: { description, title, location, link },
+          });
         }}
       >
         <Text style={styles.buttonText}>See Location in Map</Text>

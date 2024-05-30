@@ -1,14 +1,31 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Modal,
+  Button,
+} from "react-native";
 import React, { useEffect, useState } from "react";
-import MapView, { Callout } from "react-native-maps";
-import { Marker } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { app } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 
-const Map = () => {
+const Map = ({ route }) => {
   const [parkingLots, setParkingLots] = useState([]);
+  const [selectedParkingLot, setSelectedParkingLot] = useState(null);
+  const [parkingLot, setParkingLot] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const navigation = useNavigation();
 
   useEffect(() => {
-    app
+    if (route.params?.parkingLot) {
+      setParkingLot(route.params.parkingLot);
+    }
+
+    const unsubscribe = app
       .firestore()
       .collection("parkingLots")
       .onSnapshot((querySnapshot) => {
@@ -25,18 +42,32 @@ const Map = () => {
         });
         setParkingLots(newParkingLots);
       });
-  }, []);
 
-  const showLocationsofInterest = () => {
-    return parkingLots.map((item, index) => {
+    return () => unsubscribe();
+  }, [route.params]);
+
+  const handleMarkerPress = (parkingLot) => {
+    setSelectedParkingLot(parkingLot);
+    setModalVisible(true);
+  };
+
+  const renderMarkers = () => {
+    if (parkingLot) {
       return (
-        <Marker key={index} coordinate={item.location}>
-          <Callout>
-            <Text>{item.title}</Text>
-          </Callout>
-        </Marker>
+        <Marker
+          coordinate={parkingLot.location}
+          onPress={() => handleMarkerPress(parkingLot)}
+        />
       );
-    });
+    }
+
+    return parkingLots.map((item, index) => (
+      <Marker
+        key={index}
+        coordinate={item.location}
+        onPress={() => handleMarkerPress(item)}
+      />
+    ));
   };
 
   return (
@@ -45,16 +76,50 @@ const Map = () => {
         <MapView
           style={styles.map}
           initialRegion={{
-            latitude: 38.661032177462445,
+            latitude: parkingLot
+              ? parkingLot.location.latitude
+              : 38.661032177462445,
+            longitude: parkingLot
+              ? parkingLot.location.longitude
+              : -9.20490363612771,
             latitudeDelta: 0.011998132785542737,
-            longitude: -9.20490363612771,
             longitudeDelta: 0.009577833116054535,
           }}
         >
-          {showLocationsofInterest()}
+          {renderMarkers()}
         </MapView>
       ) : (
         <ActivityIndicator />
+      )}
+      {selectedParkingLot && (
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{selectedParkingLot.title}</Text>
+            <Button
+              title="Check Parking Lot Info"
+              onPress={() => {
+                setModalVisible(false);
+                navigation.navigate("ParkingLot", {
+                  parkingLot: selectedParkingLot,
+                });
+              }}
+              color="#eb2f63"
+            />
+            <Text></Text>
+            <Button
+              title="Close"
+              onPress={() => setModalVisible(false)}
+              color="#eb2f63"
+            />
+          </View>
+        </Modal>
       )}
     </View>
   );
@@ -73,5 +138,24 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: "100%",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center",
   },
 });

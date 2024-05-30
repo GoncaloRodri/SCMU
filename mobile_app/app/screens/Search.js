@@ -69,7 +69,9 @@ const Search = () => {
           scrollEnabled={true}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => navigation.navigate("ParkingLot", { item })}
+              onPress={() =>
+                navigation.navigate("ParkingLot", { parkingLot: item })
+              }
             >
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
