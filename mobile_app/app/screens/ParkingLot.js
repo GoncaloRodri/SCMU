@@ -1,11 +1,59 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { app } from "../services/firebaseConfig";
+import { useAuth } from "../contexts/authContexts";
 
 const ParkingLot = ({ route }) => {
   const { description, title, location, link } = route.params.parkingLot;
+  const { userData } = useAuth();
+  const [isSaved, setIsSaved] = useState();
+
+  console.log(isSaved);
+
+  useEffect(() => {
+    if (userData && Array.isArray(userData.saved)) {
+      setIsSaved(userData.saved.includes(title));
+    }
+  }, [userData, title]);
 
   const navigation = useNavigation();
+
+  const saveSpot = async () => {
+    if (userData && Array.isArray(userData.saved)) {
+      let updatedSaved = [...userData.saved];
+      if (!updatedSaved.includes(title)) {
+        updatedSaved.push(title);
+        try {
+          await app.firestore().collection("users").doc(userData.email).update({
+            saved: updatedSaved,
+          });
+          setIsSaved(true);
+        } catch (error) {
+          console.error("Error saving parking lot: ", error);
+          Alert.alert("Error", "There was an error saving the parking lot.");
+        }
+      } else {
+        updatedSaved = updatedSaved.filter((item) => item !== title);
+        try {
+          await app.firestore().collection("users").doc(userData.email).update({
+            saved: updatedSaved,
+          });
+          setIsSaved(false);
+        } catch (error) {
+          console.error("Error removing parking lot: ", error);
+          Alert.alert("Error", "There was an error removing the parking lot.");
+        }
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -20,13 +68,14 @@ const ParkingLot = ({ route }) => {
       >
         <Text style={styles.buttonText}>Book Parking Spot</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.altButton}
-        onPress={() => {
-          alert("START HEREEEEE PARKINGG");
-        }}
-      >
-        <Text style={styles.altButtonText}>Save Parking Lot</Text>
+      <TouchableOpacity style={styles.altButton} onPress={saveSpot}>
+        {isSaved ? (
+          <Text style={styles.altButtonText}>
+            Remove Parking Lot from Saved
+          </Text>
+        ) : (
+          <Text style={styles.altButtonText}>Save Parking Lot</Text>
+        )}
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
