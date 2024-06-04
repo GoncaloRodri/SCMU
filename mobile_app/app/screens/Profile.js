@@ -43,7 +43,7 @@ const Profile = () => {
         <View style={styles.buttonView}>
           <View style={{ borderWidth: 0.6, width: "115%" }} />
           <TouchableOpacity
-            onPress={() => navigation.navigate("PersonalInformation")}
+            onPress={() => navigation.navigate("PersonalInformation", {userData})}
           >
             <Text style={styles.settingsText}>Personal Information</Text>
           </TouchableOpacity>
