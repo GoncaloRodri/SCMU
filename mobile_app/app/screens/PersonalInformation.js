@@ -1,17 +1,21 @@
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { app } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 import React, { useState } from 'react';
 
 const PersonalInformation = ({route}) => {
     const { username, email, address, carModel, carColor, carBrand, licensePlate } = route.params.userData;
+
+    const navigation = useNavigation();
 
     const [editable, setEditable] = useState(false);
     const [userInfo, setUserInfo] = useState({
         username,
         email,
         address,
+        carBrand,
         carModel,
         carColor,
-        carBrand,
         licensePlate
     });
 
@@ -24,7 +28,19 @@ const PersonalInformation = ({route}) => {
     };
 
     const handleSave = () => {
+
         // Aqui você pode adicionar a lógica para salvar as informações atualizadas
+        app.firestore().collection("users").doc(userInfo.email).update(
+            {
+            username: userInfo.username,
+            email: userInfo.email,
+            address: userInfo.address,
+            carBrand: userInfo.carBrand,
+            carModel: userInfo.carModel,
+            carColor: userInfo.carColor,
+            licensePlate: userInfo.licensePlate
+            }
+        )
         console.log('Informações salvas:', userInfo);
         setEditable(false);
     };
@@ -48,6 +64,9 @@ const PersonalInformation = ({route}) => {
                     </View>
                 ))}
                 <Button title={editable ? "Save" : "Edit"} onPress={editable ? handleSave : handleEdit} />
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
             </View>
         </View>
     );
@@ -105,5 +124,8 @@ const styles = StyleSheet.create({
         color: "#555",
         flex: 1,
         textAlign: 'right'
+    },
+    buttonContainer: {
+        marginTop: 100, // Adicione espaçamento para mover o botão para baixo
     },
 });
