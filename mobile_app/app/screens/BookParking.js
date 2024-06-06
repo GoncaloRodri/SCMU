@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView, Modal } from 'react-native';
+import DatePicker from "react-native-modern-datepicker";
 import { app } from "../services/firebaseConfig";
 
 const BookParking = ({ navigation }) => {
     const [selectedPark, setSelectedPark] = useState("");
     const [date, setDate] = useState("");
-    const [startTime, setStartTime] = useState("");
-    const [endTime, setEndTime] = useState("");
+    const [openDate, setOpenDate] = useState(false);   
     const [parkingLots, setParkingLots] = useState([]);
+
+    function handleOnPress() {
+        setOpenDate(!openDate);
+    }
 
     useEffect(() => {
         const unsubscribe = app
@@ -69,37 +73,29 @@ const BookParking = ({ navigation }) => {
                 scrollEnabled={true} // Desativa a rolagem interna
             />
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Select Date:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="YYYY-MM-DD"
-                    value={date}
-                    onChangeText={(text) => setDate(text)}
-                />
-            </View>
+            <Text style={styles.label}>Schedule your appointment</Text>
+                {date ? <Text>Date Picked: {date}</Text> : <Text>No date selected</Text>}
+                <View>
+                    <TouchableOpacity style={styles.dateButton} onPress={handleOnPress}>
+                        <Text style={styles.centerText}>
+                            {date ? "Change Date" : "Choose Date"}
+                        </Text>
+                    </TouchableOpacity>
+                    <Modal animationType="slide" transparent={true} visible={openDate}>
+                        <View style={styles.centeredView}>
+                            <View style={styles.modalView}>
+                                <DatePicker onSelectedChange={(date) => setDate(date)} />
+                                <TouchableOpacity onPress={handleOnPress}>
+                                    <Text>Close</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
 
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Select Start Time:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="HH:MM"
-                    value={startTime}
-                    onChangeText={(text) => setStartTime(text)}
-                />
+            <View style={styles.buttonSpacing}>
+                <Button title="Book Now" onPress={handleBooking} />
             </View>
-
-            <View style={styles.inputContainer}>
-                <Text style={styles.label}>Select End Time:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="HH:MM"
-                    value={endTime}
-                    onChangeText={(text) => setEndTime(text)}
-                />
-            </View>
-
-            <Button title="Book Now" onPress={handleBooking} />
 
             <View style={styles.buttonContainer}>
                 <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
@@ -165,5 +161,41 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         marginTop: 20,
+    },
+    buttonSpacing: {
+        marginVertical: 20, // Adiciona margem vertical entre o botão de data e o botão de reserva
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        width: "90%",
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    centerText: {
+        textAlign: "center",
+    },
+    dateButton: {
+        padding: 10,
+        borderRadius: 10,
+        borderColor: "black",
+        borderWidth: 1,
+        marginTop: 10,
+        alignItems: "center",
+    },
+    centeredView: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: 22,
     },
 });
