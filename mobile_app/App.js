@@ -10,6 +10,7 @@ import History from "./app/screens/History";
 import Notifications from "./app/screens/Notifications";
 import Saved from "./app/screens/Saved";
 import PersonalInformation from "./app/screens/PersonalInformation";
+import BookParking from "./app/screens/BookParking";
 import Map from "./app/screens/Map";
 import ParkingLot from "./app/screens/ParkingLot";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -59,6 +60,11 @@ const StackNavigator = () => {
       <Stack.Screen
         name="PersonalInformation"
         component={PersonalInformation}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BookParking"
+        component={BookParking}
         options={{ headerShown: false }}
       />
       <Stack.Screen

@@ -26,11 +26,8 @@ const Home = () => {
             Hi {userData.username}, get ready to park and furious!
           </Text>
           <View style={styles.buttonView}>
-            <TouchableOpacity style={styles.startButton}>
-              <Text style={styles.startText}>Start Parking</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.bookButton}>
-              <Text style={styles.bookText}>Book Parking</Text>
+            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("BookParking")}>
+              <Text style={styles.startText}>Book Parking</Text>
             </TouchableOpacity>
           </View>
           <Image
