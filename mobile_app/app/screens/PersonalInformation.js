@@ -1,23 +1,44 @@
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import { app } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const PersonalInformation = ({route}) => {
-    const { username, email, address, carModel, carColor, carBrand, licensePlate } = route.params.userData;
+    const {email} = route.params.userData;
+
+    const fetchUserData = async () => {
+        try {
+            const userDoc = await app.firestore().collection('users').doc(email).get();
+            const userData = userDoc.data();
+            const userInfoRet = {
+                username: userData.username,
+                email: email,
+                address: userData.address,
+                carBrand: userData.carBrand,
+                carModel: userData.carModel,
+                carColor: userData.carColor,
+                licensePlate: userData.licensePlate
+            }
+
+            if (userDoc.exists) {
+                setUserInfo(userInfoRet);
+                return userInfoRet;
+            } else {
+                console.log('No such document!');
+            }
+        } catch (error) {
+            console.error('Error fetching user data: ', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUserData();
+    }, []);
 
     const navigation = useNavigation();
 
     const [editable, setEditable] = useState(false);
-    const [userInfo, setUserInfo] = useState({
-        username,
-        email,
-        address,
-        carBrand,
-        carModel,
-        carColor,
-        licensePlate
-    });
+    const [userInfo, setUserInfo] = useState([]);
 
     const handleEdit = () => {
         setEditable(!editable);
@@ -28,12 +49,9 @@ const PersonalInformation = ({route}) => {
     };
 
     const handleSave = () => {
-
-        // Aqui você pode adicionar a lógica para salvar as informações atualizadas
         app.firestore().collection("users").doc(userInfo.email).update(
             {
             username: userInfo.username,
-            email: userInfo.email,
             address: userInfo.address,
             carBrand: userInfo.carBrand,
             carModel: userInfo.carModel,
@@ -52,14 +70,14 @@ const PersonalInformation = ({route}) => {
                 {Object.keys(userInfo).map((key) => (
                     <View style={styles.infoItem} key={key}>
                         <Text style={styles.label}>{key.charAt(0).toUpperCase() + key.slice(1)}:</Text>
-                        {editable ? (
+                        {key === 'email'|| !editable ? (
+                            <Text style={styles.value}>{userInfo[key]}</Text>
+                        ) : (
                             <TextInput
                                 style={styles.input}
                                 value={userInfo[key]}
                                 onChangeText={(text) => handleChange(key, text)}
                             />
-                        ) : (
-                            <Text style={styles.value}>{userInfo[key]}</Text>
                         )}
                     </View>
                 ))}
