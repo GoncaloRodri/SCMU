@@ -7,8 +7,10 @@ import { useAuth } from "../contexts/authContexts";
 
 const BookParking = () => {
     const [selectedPark, setSelectedPark] = useState(null);
-    const [date, setDate] = useState("");
-    const [openDate, setOpenDate] = useState(false);
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [openStartDate, setOpenStartDate] = useState(false);
+    const [openEndDate, setOpenEndDate] = useState(false);
     const [parkingLots, setParkingLots] = useState([]);
     const [spot, setSpot] = useState(null);
 
@@ -16,10 +18,6 @@ const BookParking = () => {
     const username = userData.username;
 
     const navigation = useNavigation();
-
-    function handleOnPress() {
-        setOpenDate(!openDate);
-    }
 
     useEffect(() => {
         const unsubscribe = app
@@ -37,8 +35,22 @@ const BookParking = () => {
     }, []);
 
     const handleBooking = async () => {
-        if (!selectedPark || !spot || !date) {
-            alert("Please select a park, spot, and date");
+        if (!selectedPark || !spot || !startDate || !endDate) {
+            alert("Please select a park, spot, and both start and end dates");
+            return;
+        }
+
+        const currentTime = new Date().getTime();
+        const startDateTime = new Date(startDate).getTime();
+        const endDateTime = new Date(endDate).getTime();
+
+        if (startDateTime <= currentTime) {
+            alert("Start date should be after the current time");
+            return;
+        }
+
+        if (endDateTime <= startDateTime) {
+            alert("End date should be after the start date");
             return;
         }
 
@@ -62,7 +74,8 @@ const BookParking = () => {
                         parkingLot: selectedPark.id,
                         parkingSpot: spot,
                         username,
-                        date,
+                        startDate,
+                        endDate,
                     });
 
                     alert('Parking spot reserved successfully');
@@ -122,19 +135,39 @@ const BookParking = () => {
                 scrollEnabled={true}
             />
 
-            <Text style={styles.label}>Schedule your appointment</Text>
-            {date ? <Text>Date Picked: {date}</Text> : <Text>No date selected</Text>}
+            <Text style={styles.label}>Select Start Date:</Text>
+            {startDate ? <Text>Start Date: {startDate}</Text> : <Text>No start date selected</Text>}
             <View style={styles.dateButtonContainer}>
-                <TouchableOpacity style={styles.dateButton} onPress={handleOnPress}>
+                <TouchableOpacity style={styles.dateButton} onPress={() => setOpenStartDate(true)}>
                     <Text style={styles.centerText}>
-                        {date ? "Change Date" : "Choose Date"}
+                        {startDate ? "Change Start Date" : "Choose Start Date"}
                     </Text>
                 </TouchableOpacity>
-                <Modal animationType="slide" transparent={true} visible={openDate}>
+                <Modal animationType="slide" transparent={true} visible={openStartDate}>
                     <View style={styles.centeredView}>
                         <View style={styles.modalView}>
-                            <DatePicker onSelectedChange={(date) => setDate(date)} />
-                            <TouchableOpacity onPress={handleOnPress}>
+                            <DatePicker onSelectedChange={(date) => { setStartDate(date); setOpenStartDate(false); }} />
+                            <TouchableOpacity onPress={() => setOpenStartDate(false)}>
+                                <Text>Close</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+            </View>
+
+            <Text style={styles.label}>Select End Date:</Text>
+            {endDate ? <Text>End Date: {endDate}</Text> : <Text>No end date selected</Text>}
+            <View style={styles.dateButtonContainer}>
+                <TouchableOpacity style={styles.dateButton} onPress={() => setOpenEndDate(true)}>
+                    <Text style={styles.centerText}>
+                        {endDate ? "Change End Date" : "Choose End Date"}
+                    </Text>
+                </TouchableOpacity>
+                <Modal animationType="slide" transparent={true} visible={openEndDate}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <DatePicker onSelectedChange={(date) => { setEndDate(date); setOpenEndDate(false); }} />
+                            <TouchableOpacity onPress={() => setOpenEndDate(false)}>
                                 <Text>Close</Text>
                             </TouchableOpacity>
                         </View>
