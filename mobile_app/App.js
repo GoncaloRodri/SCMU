@@ -18,6 +18,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import { NavigationContainer } from "@react-navigation/native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AuthProvider } from "./app/contexts/authContexts";
+import ParkingSpots from "./app/screens/ParkingSpots";
 
 LogBox.ignoreLogs(["@firebase/auth"]);
 
@@ -90,6 +91,11 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ParkingLot"
         component={ParkingLot}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="ParkingSpots"
+        component={ParkingSpots}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

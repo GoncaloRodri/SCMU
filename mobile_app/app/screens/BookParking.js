@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView, Modal } from 'react-native';
+import { View, Text, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView, Modal } from 'react-native';
 import DatePicker from "react-native-modern-datepicker";
 import { app } from "../services/firebaseConfig";
+import { useNavigation } from "@react-navigation/native";
 
 const BookParking = () => {
-    const [selectedPark, setSelectedPark] = useState("");
+    const [selectedPark, setSelectedPark] = useState(null);
     const [date, setDate] = useState("");
     const [openDate, setOpenDate] = useState(false);   
     const [parkingLots, setParkingLots] = useState([]);
     const [spot, setSpot] = useState("");
+
+    const navigation = useNavigation();
 
     function handleOnPress() {
         setOpenDate(!openDate);
@@ -21,8 +24,7 @@ const BookParking = () => {
             .onSnapshot((querySnapshot) => {
                 const newParkingLots = [];
                 querySnapshot.forEach((doc) => {
-                    const { title } = doc.data();
-                    newParkingLots.push(title);
+                    newParkingLots.push({ id: doc.id, ...doc.data() });
                 });
                 setParkingLots(newParkingLots);
             });
@@ -35,9 +37,9 @@ const BookParking = () => {
         console.log({
             selectedPark,
             date,
-            startTime,
-            endTime
+            spot,
         });
+        
         // Navegar de volta para a tela inicial ou uma confirmação de reserva
     };
 
@@ -45,20 +47,31 @@ const BookParking = () => {
         <TouchableOpacity
             style={[
                 styles.parkButton,
-                selectedPark === item && styles.selectedParkButton
+                selectedPark?.title === item.title && styles.selectedParkButton
             ]}
             onPress={() => setSelectedPark(item)}
         >
             <Text
                 style={[
                     styles.parkButtonText,
-                    selectedPark === item && styles.selectedParkButtonText
+                    selectedPark?.title === item.title && styles.selectedParkButtonText
                 ]}
             >
-                {item}
+                {item.title}
             </Text>
         </TouchableOpacity>
     );
+
+    const chooseParkingSpot = () => {
+        if (selectedPark) {
+            navigation.navigate('ParkingSpots', {
+                selectedPark,
+                onSpotSelect: (selectedSpot) => setSpot(selectedSpot)
+            });
+        } else {
+            alert('Please select a park first');
+        }
+    };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
@@ -68,7 +81,7 @@ const BookParking = () => {
             <FlatList
                 data={parkingLots}
                 renderItem={renderParkItem}
-                keyExtractor={(item) => item}
+                keyExtractor={(item) => item.id}
                 horizontal={true}
                 style={styles.flatList}
                 scrollEnabled={true}
@@ -96,21 +109,19 @@ const BookParking = () => {
 
             <Text style={styles.label}>Select your parking spot</Text>
                 {spot ? <Text>Parking spot picked: {spot}</Text> : <Text>No spot selected</Text>}
-                <View style={styles.dateButtonContainer}>
-                    <TouchableOpacity style={styles.dateButton} onPress={() => navigation.navigate('ParkingSpots', selectedPark)}>
+                <View>
+                    <TouchableOpacity style={styles.dateButton} onPress={chooseParkingSpot}>
                         <Text style={styles.centerText}>
                             {spot ? "Change Parking Spot" : "Choose Parking Spot"}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-            
-
             <View style={styles.buttonSpacing}>
                 <Button title="Book Now" onPress={handleBooking} />
             </View>
 
-            <View style={styles.homeButtonContainer}>
+            <View style={styles.buttonContainer}>
                 <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
             </View>
         </ScrollView>
@@ -205,16 +216,13 @@ const styles = StyleSheet.create({
         marginTop: 10,
         alignItems: "center",
     },
+    dateButtonContainer: {
+        marginBottom: 20, // Add space between the date button and the next section
+    },
     centeredView: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
         marginTop: 22,
-    },
-    dateButtonContainer: {
-        marginBottom: 20, // Add space between the date button and the next section
-    },
-    homeButtonContainer: {
-        marginTop: 70
     },
 });
