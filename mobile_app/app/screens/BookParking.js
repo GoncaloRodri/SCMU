@@ -3,13 +3,17 @@ import { View, Text, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView,
 import DatePicker from "react-native-modern-datepicker";
 import { app } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../contexts/authContexts";
 
 const BookParking = () => {
     const [selectedPark, setSelectedPark] = useState(null);
     const [date, setDate] = useState("");
-    const [openDate, setOpenDate] = useState(false);   
+    const [openDate, setOpenDate] = useState(false);
     const [parkingLots, setParkingLots] = useState([]);
-    const [spot, setSpot] = useState("");
+    const [spot, setSpot] = useState(null);
+
+    const { userData, setUserData } = useAuth();
+    const username = userData.username;
 
     const navigation = useNavigation();
 
@@ -29,32 +33,63 @@ const BookParking = () => {
                 setParkingLots(newParkingLots);
             });
 
-        return () => unsubscribe(); // Limpar subscrição ao desmontar o componente
+        return () => unsubscribe(); // Clean up subscription on component unmount
     }, []);
 
-    const handleBooking = () => {
-        // Lógica para reservar a vaga de estacionamento, como salvar os dados no Firebase
-        console.log({
-            selectedPark,
-            date,
-            spot,
-        });
-        
-        // Navegar de volta para a tela inicial ou uma confirmação de reserva
+    const handleBooking = async () => {
+        if (!selectedPark || !spot || !date) {
+            alert("Please select a park, spot, and date");
+            return;
+        }
+
+        try {
+            // Fetch the selected parking lot document
+            const parkingLotDoc = await app.firestore().collection('parkingLots').doc(selectedPark.id).get();
+            
+            if (parkingLotDoc.exists) {
+                const parkingLotData = parkingLotDoc.data();
+                const spots = parkingLotData.spots;
+
+                // Check if the selected spot exists and its status
+                if (spots[spot] && spots[spot] === 'free') {
+                    // Update the spot status to 'reserved'
+                    await app.firestore().collection('parkingLots').doc(selectedPark.id).update({
+                        [`spots.${spot}`]: 'reserved'
+                    });
+
+                    // Add the booking information to the bookedParkings collection
+                    await app.firestore().collection('bookedParkings').add({
+                        parkingLot: selectedPark.id,
+                        parkingSpot: spot,
+                        username,
+                        date,
+                    });
+
+                    alert('Parking spot reserved successfully');
+                    navigation.navigate('Home');
+                } else {
+                    alert(`Parking spot is currently ${spots[spot]}`);
+                }
+            } else {
+                alert('Selected parking lot does not exist');
+            }
+        } catch (error) {
+            console.error("Error updating parking spot: ", error);
+        }
     };
 
     const renderParkItem = ({ item }) => (
         <TouchableOpacity
             style={[
                 styles.parkButton,
-                selectedPark?.title === item.title && styles.selectedParkButton
+                selectedPark?.id === item.id && styles.selectedParkButton
             ]}
             onPress={() => setSelectedPark(item)}
         >
             <Text
                 style={[
                     styles.parkButtonText,
-                    selectedPark?.title === item.title && styles.selectedParkButtonText
+                    selectedPark?.id === item.id && styles.selectedParkButtonText
                 ]}
             >
                 {item.title}
@@ -88,34 +123,34 @@ const BookParking = () => {
             />
 
             <Text style={styles.label}>Schedule your appointment</Text>
-                {date ? <Text>Date Picked: {date}</Text> : <Text>No date selected</Text>}
-                <View style={styles.dateButtonContainer}>
-                    <TouchableOpacity style={styles.dateButton} onPress={handleOnPress}>
-                        <Text style={styles.centerText}>
-                            {date ? "Change Date" : "Choose Date"}
-                        </Text>
-                    </TouchableOpacity>
-                    <Modal animationType="slide" transparent={true} visible={openDate}>
-                        <View style={styles.centeredView}>
-                            <View style={styles.modalView}>
-                                <DatePicker onSelectedChange={(date) => setDate(date)} />
-                                <TouchableOpacity onPress={handleOnPress}>
-                                    <Text>Close</Text>
-                                </TouchableOpacity>
-                            </View>
+            {date ? <Text>Date Picked: {date}</Text> : <Text>No date selected</Text>}
+            <View style={styles.dateButtonContainer}>
+                <TouchableOpacity style={styles.dateButton} onPress={handleOnPress}>
+                    <Text style={styles.centerText}>
+                        {date ? "Change Date" : "Choose Date"}
+                    </Text>
+                </TouchableOpacity>
+                <Modal animationType="slide" transparent={true} visible={openDate}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <DatePicker onSelectedChange={(date) => setDate(date)} />
+                            <TouchableOpacity onPress={handleOnPress}>
+                                <Text>Close</Text>
+                            </TouchableOpacity>
                         </View>
-                    </Modal>
-                </View>
+                    </View>
+                </Modal>
+            </View>
 
             <Text style={styles.label}>Select your parking spot</Text>
-                {spot ? <Text>Parking spot picked: {spot}</Text> : <Text>No spot selected</Text>}
-                <View>
-                    <TouchableOpacity style={styles.dateButton} onPress={chooseParkingSpot}>
-                        <Text style={styles.centerText}>
-                            {spot ? "Change Parking Spot" : "Choose Parking Spot"}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+            {spot ? <Text>Parking spot picked: {spot}</Text> : <Text>No spot selected</Text>}
+            <View>
+                <TouchableOpacity style={styles.dateButton} onPress={chooseParkingSpot}>
+                    <Text style={styles.centerText}>
+                        {spot ? "Change Parking Spot" : "Choose Parking Spot"}
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
             <View style={styles.buttonSpacing}>
                 <Button title="Book Now" onPress={handleBooking} />
@@ -151,7 +186,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     flatList: {
-        maxHeight: 100, // Limita a altura da lista de parques
+        maxHeight: 100, // Limit the height of the park list
         marginBottom: 20,
     },
     parkButton: {
@@ -187,7 +222,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     buttonSpacing: {
-        marginVertical: 20, // Adiciona margem vertical entre o botão de data e o botão de reserva
+        marginVertical: 20, // Add vertical margin between date button and booking button
     },
     modalView: {
         margin: 20,
@@ -198,8 +233,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
-          width: 0,
-          height: 2,
+            width: 0,
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
