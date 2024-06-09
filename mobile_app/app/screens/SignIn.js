@@ -35,6 +35,10 @@ const SignIn = () => {
         error.code === "auth/wrong-password"
       ) {
         alert("Invalid email or password");
+      } else if (error.code === "auth/invalid-email") {
+        alert("Invalid email!");
+      } else if (error.code === "auth/invalid-credential") {
+        alert("User must register first!");
       } else if (error.code === "auth/too-many-requests") {
         alert("Too many unsuccessful attempts. Try again later");
       } else {
