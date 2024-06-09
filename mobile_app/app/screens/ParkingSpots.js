@@ -1,83 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
-import { app } from "../services/firebaseConfig";
+import { app, db } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 
-const ParkingSpots = ({route}) => {
-    const { selectedPark, onSpotSelect } = route.params;
-    const [spots, setSpots] = useState([]);
+const ParkingSpots = ({ route }) => {
+  const { selectedPark, onSpotSelect } = route.params;
+  const [spots, setSpots] = useState([]);
 
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
-    useEffect(() => {
-        if (selectedPark && selectedPark.id) {
-            const unsubscribe = app
-                .firestore()
-                .collection("parkingLots")
-                .doc(selectedPark.id)
-                .onSnapshot((doc) => {
-                    const data = doc.data();
-                    if (data && data.spots) {
-                        const spotsArray = Object.entries(data.spots).map(([key, value]) => ({
-                            spot: key,
-                            status: value
-                        }));
-                        setSpots(spotsArray);
-                    } else {
-                        console.error('No spots data available');
-                    }
-                });
-
-            return () => unsubscribe(); // Cleanup subscription on unmount
+  useEffect(() => {
+    if (selectedPark && selectedPark.id) {
+      db.ref(`${selectedPark.id}`).on("value", (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const spotsArray = Object.entries(data).map(([key, value]) => ({
+            spot: key,
+            status: value,
+          }));
+          setSpots(spotsArray);
         } else {
-            console.error('Invalid selectedPark data');
+          console.error("No spots data available");
         }
-    }, [selectedPark]);
+      });
 
-    const selectSpot = (spot) => {
-        onSpotSelect(spot);
-        navigation.goBack();
-    };
+      return; // Cleanup subscription on unmount
+    } else {
+      console.error("Invalid selectedPark data");
+    }
+  }, [selectedPark]);
 
-    const renderSpotItem = ({ item }) => {
-        let buttonStyle;
-        switch (item.status) {
-            case 'free':
-                buttonStyle = styles.freeSpot;
-                break;
-            case 'occupied':
-                buttonStyle = styles.occupiedSpot;
-                break;
-            case 'reserved':
-                buttonStyle = styles.reservedSpot;
-                break;
-            default:
-                buttonStyle = styles.defaultSpot;
-                break;
-        }
+  const selectSpot = (spot) => {
+    console.log("Selected spot: ", spot);
+    onSpotSelect(spot);
+    navigation.goBack();
+  };
 
-        return (
-            <TouchableOpacity
-                style={[styles.spotButton, buttonStyle]}
-                onPress={() => selectSpot(item.spot)}
-                disabled={item.status !== 'free'}
-            >
-                <Text style={styles.spotButtonText}>{item.spot}</Text>
-            </TouchableOpacity>
-        );
-    };
+  const renderSpotItem = ({ item }) => {
+    let buttonStyle;
+    switch (item.status) {
+      case "free":
+        buttonStyle = styles.freeSpot;
+        break;
+      case "occupied":
+        buttonStyle = styles.occupiedSpot;
+        break;
+      case "reserved":
+        buttonStyle = styles.reservedSpot;
+        break;
+      default:
+        buttonStyle = styles.defaultSpot;
+        break;
+    }
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Select a Parking Spot</Text>
-            <FlatList
-                data={spots}
-                renderItem={renderSpotItem}
-                keyExtractor={(item) => item.spot}
-                numColumns={2}
-            />
-        </View>
+      <TouchableOpacity
+        style={[styles.spotButton, buttonStyle]}
+        onPress={() => selectSpot(item.spot)}
+        disabled={item.status !== "free"}
+      >
+        <Text style={styles.spotButtonText}>{item.spot}</Text>
+      </TouchableOpacity>
     );
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Select a Parking Spot</Text>
+      <FlatList
+        data={spots}
+        renderItem={renderSpotItem}
+        keyExtractor={(item) => item.spot}
+        numColumns={2}
+      />
+    </View>
+  );
 };
 
 export default ParkingSpots;

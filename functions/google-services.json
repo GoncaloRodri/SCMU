@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1008386923033",
+    "project_id": "scmu-app",
+    "storage_bucket": "scmu-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008386923033:android:4250483ee731489c982888",
+        "android_client_info": {
+          "package_name": "com.scmu.park"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1008386923033-3q4re3fto5ci90nm3hlsb9s751rrvku5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6_XvRQuU1IeHRte059ntdJ8oOYdjTWtY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1008386923033-3q4re3fto5ci90nm3hlsb9s751rrvku5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1008386923033-h2p3mhvif7bu6r40riquqbqdo71h0cgj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.scmu.park"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
