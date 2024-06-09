@@ -13,27 +13,42 @@ const Home = () => {
     <View style={styles.container}>
       {userData ? (
         <>
-          <TouchableOpacity
-            style={styles.profilePicBack}
-            onPress={() => navigation.navigate("Profile")}
-          >
-            <Image
-              source={require("../assets/xandao-pic.png")}
-              style={styles.profilePic}
-            />
-          </TouchableOpacity>
-          <Text style={styles.title}>
-            Hi {userData.username}, get ready to park and furious!
-          </Text>
-          <View style={styles.buttonView}>
-            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("BookParking")}>
-              <Text style={styles.startText}>Book Parking</Text>
+          {userData.role === "client" ? (
+            <>
+              <TouchableOpacity
+                style={styles.profilePicBack}
+                onPress={() => navigation.navigate("Profile")}
+              >
+                <Image
+                  source={require("../assets/xandao-pic.png")}
+                  style={styles.profilePic}
+                />
+              </TouchableOpacity>
+              <Text style={styles.title}>
+                Hi {userData.username}, get ready to park and furious!
+              </Text>
+              <View style={styles.buttonView}>
+                <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("BookParking")}>
+                  <Text style={styles.startText}>Book Parking</Text>
+                </TouchableOpacity>
+              </View>
+              <Image
+                source={require("../assets/parking-sign.png")}
+                style={styles.parkingImage}
+              />
+            </>
+          ) : userData.role === "admin" ? (
+            <>
+            <Text style={styles.title}>
+              Hi {userData.username}, get ready to park and furious!
+            </Text>
+            <View style={styles.buttonView}>
+            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("AddParkingLot")}>
+              <Text style={styles.startText}>Add Parking Lot</Text>
             </TouchableOpacity>
           </View>
-          <Image
-            source={require("../assets/parking-sign.png")}
-            style={styles.parkingImage}
-          />
+          </>  
+          ) : null}
         </>
       ) : (
         <ActivityIndicator color="#0000ff" size="large" />

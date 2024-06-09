@@ -19,6 +19,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { AuthProvider } from "./app/contexts/authContexts";
 import ParkingSpots from "./app/screens/ParkingSpots";
+import AddParkingLot from "./app/screens/AddParkingLot"
 
 LogBox.ignoreLogs(["@firebase/auth"]);
 
@@ -96,6 +97,11 @@ const StackNavigator = () => {
        <Stack.Screen
         name="ParkingSpots"
         component={ParkingSpots}
+        options={{ headerShown: false }}
+      />
+       <Stack.Screen
+        name="AddParkingLot"
+        component={AddParkingLot}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
