@@ -1,87 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import { app } from "../services/firebaseConfig";
+import { app, db } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 
 const BookParking = () => {
+  const navigation = useNavigation();
 
-    const navigation = useNavigation();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [link, setLink] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
 
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [link, setLink] = useState("");
-    const [latitude, setLatitude] = useState("");
-    const [longitude, setLongitude] = useState("");
+  useEffect(() => {}, []);
 
-    useEffect(() => {
-    }, []);
+  const handleFunc = async () => {
+    app.firestore().collection("parkingLots").doc(title).set({
+      description,
+      link,
+      location: {
+        latitude,
+        longitude,
+      },
+      title,
+    });
 
-    const handleFunc = async () => {
-       app.firestore().collection("parkingLots").doc(title).set({
-        description,
-        link,
-        location:{
-            latitude,
-            longitude,
-        },
-        spots:{
-            spot1: "free",
-            spot2: "free",
-            spot3: "free",
-            spot4: "free"
-        },
-        title
-       })
+    db.ref(title).set({
+      A1: "free",
+      A2: "free",
+      A3: "free",
+      A4: "free",
+      A5: "free",
+      A6: "free",
+      A7: "free",
+      A8: "free",
+      A9: "free",
+      A10: "free",
+    });
+    return;
+  };
 
-       alert("Parking lot added to database!")
-       return;
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Add a Parking Lot</Text>
 
-    };
+      <TextInput
+        placeholder="Title"
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+      />
+      <TextInput
+        placeholder="Description"
+        style={styles.input}
+        value={description}
+        onChangeText={setDescription}
+      />
+      <TextInput
+        placeholder="Link"
+        style={styles.input}
+        value={link}
+        onChangeText={setLink}
+      />
+      <TextInput
+        placeholder="Latitude"
+        style={styles.input}
+        value={latitude}
+        onChangeText={setLatitude}
+      />
+      <TextInput
+        placeholder="Longitude"
+        style={styles.input}
+        value={longitude}
+        onChangeText={setLongitude}
+      />
 
-    return (
-        <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Add a Parking Lot</Text>
+      <View style={styles.buttonSpacing}>
+        <Button title="Add to database" onPress={handleFunc} />
+      </View>
 
-            <TextInput
-          placeholder="Title"
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Back to Home"
+          onPress={() => navigation.navigate("Home")}
         />
-         <TextInput
-          placeholder="Description"
-          style={styles.input}
-          value={description}
-          onChangeText={setDescription}
-        />
-         <TextInput
-          placeholder="Link"
-          style={styles.input}
-          value={link}
-          onChangeText={setLink}
-        />
-         <TextInput
-          placeholder="Latitude"
-          style={styles.input}
-          value={latitude}
-          onChangeText={setLatitude}
-        />
-         <TextInput
-          placeholder="Longitude"
-          style={styles.input}
-          value={longitude}
-          onChangeText={setLongitude}
-        />
-
-            <View style={styles.buttonSpacing}>
-                <Button title="Add to database" onPress={handleFunc} />
-            </View>
-
-            <View style={styles.buttonContainer}>
-                <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
-            </View>
-        </ScrollView>
-    );
+      </View>
+    </ScrollView>
+  );
 };
 
 export default BookParking;

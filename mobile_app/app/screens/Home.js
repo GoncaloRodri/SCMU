@@ -6,14 +6,27 @@ import { useNavigation } from "@react-navigation/native";
 
 const Home = () => {
   const { userData } = useAuth();
-
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       {userData ? (
         <>
-          {userData.role === "client" ? (
+          {userData.role === "admin" ? (
+            <>
+              <Text style={styles.title}>
+                Hi {userData.username}, get ready to park and furious!
+              </Text>
+              <View style={styles.buttonView}>
+                <TouchableOpacity
+                  style={styles.startButton}
+                  onPress={() => navigation.navigate("AddParkingLot")}
+                >
+                  <Text style={styles.startText}>Add Parking Lot</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
             <>
               <TouchableOpacity
                 style={styles.profilePicBack}
@@ -28,7 +41,10 @@ const Home = () => {
                 Hi {userData.username}, get ready to park and furious!
               </Text>
               <View style={styles.buttonView}>
-                <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("BookParking")}>
+                <TouchableOpacity
+                  style={styles.startButton}
+                  onPress={() => navigation.navigate("BookParking")}
+                >
                   <Text style={styles.startText}>Book Parking</Text>
                 </TouchableOpacity>
               </View>
@@ -37,18 +53,7 @@ const Home = () => {
                 style={styles.parkingImage}
               />
             </>
-          ) : userData.role === "admin" ? (
-            <>
-            <Text style={styles.title}>
-              Hi {userData.username}, get ready to park and furious!
-            </Text>
-            <View style={styles.buttonView}>
-            <TouchableOpacity style={styles.startButton} onPress={() => navigation.navigate("AddParkingLot")}>
-              <Text style={styles.startText}>Add Parking Lot</Text>
-            </TouchableOpacity>
-          </View>
-          </>  
-          ) : null}
+          )}
         </>
       ) : (
         <ActivityIndicator color="#0000ff" size="large" />
