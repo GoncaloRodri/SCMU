@@ -195,7 +195,7 @@ unsigned long distanceTimer = 0;
 unsigned long distanceThreshold = 5000;       // 5 seconds
 bool isSpotOccupied = false;                  // Flag to track if the spot is currently occupied
 unsigned long motionDetectedTimer = 0;        // Timer for motion detection
-unsigned long motionDetectionDuration = 3000; // 30 seconds
+unsigned long motionDetectionDuration = 30000; // 30 seconds
 void setup()
 {
   Serial.begin(9600);        // initialize serial port
