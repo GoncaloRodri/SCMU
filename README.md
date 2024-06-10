@@ -1,9 +1,19 @@
 # SCMU
 
-# cliente
-# miguel@gmail.com
-# 123456789
+Run the project function:
+```
+   cd functions && npm install && node App.js
+```
 
-# admin
-# admin@parkingfurious.com
-# admin123
+Launch the mobile app:
+```
+   cd mobile_app && npm install && npx expo start
+```
+
+### Client
+miguel@gmail.com
+123456789
+
+### Admin
+admin@gmail.com
+admin123
