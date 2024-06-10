@@ -27,7 +27,7 @@ bool signupOK = false;
 long duration;
 float distance;
 
-//Button Variables
+// Button Variables
 int lastState = HIGH;
 int currentState;
 
@@ -45,6 +45,10 @@ long microsecondsToCentimeters(long microseconds)
 #define LED_PIN4 23   // ESP32 pin GPIO23 connected to LED4's pin
 #define MOTION_PIN 32 // ESP32 pin GPIO32 connected to the motion sensor
 #define BUTTON_PIN 33
+
+// Parking lots CONSTS
+#define PARKING_LOT "DI Parking Lot"
+#define PARKING_SPOT "A1"
 
 // variables will change:
 float duration_us, distance_cm;
@@ -184,6 +188,14 @@ const unsigned char cheio_bitmap[] PROGMEM = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
+String parkingSpots[9]; // Assuming there are 9 spots as mentioned
+
+// Timer variables
+unsigned long distanceTimer = 0;
+unsigned long distanceThreshold = 5000;       // 5 seconds
+bool isSpotOccupied = false;                  // Flag to track if the spot is currently occupied
+unsigned long motionDetectedTimer = 0;        // Timer for motion detection
+unsigned long motionDetectionDuration = 3000; // 30 seconds
 void setup()
 {
   Serial.begin(9600);        // initialize serial port
@@ -193,9 +205,8 @@ void setup()
   pinMode(LED_PIN2, OUTPUT);
   pinMode(LED_PIN3, OUTPUT);
   pinMode(LED_PIN4, OUTPUT);
-  pinMode(MOTION_PIN, INPUT); // set ESP32 pin to input mode for motion sensor
+  pinMode(MOTION_PIN, INPUT);        // set ESP32 pin to input mode for motion sensor
   pinMode(BUTTON_PIN, INPUT_PULLUP); // config GPIO21 as input pin and enable the internal pull-up resistor
-
 
   // initialize OLED display with I2C address 0x3C
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
@@ -235,14 +246,140 @@ void setup()
   Firebase.begin(&config, &auth);
 }
 
+bool areAllSpotsOccupiedOrReserved()
+{
+  for (int i = 0; i < 9; i++)
+  {
+    if (parkingSpots[i].substring(1, parkingSpots[i].length() - 1) != "occupied" && parkingSpots[i].substring(1, parkingSpots[i].length() - 1) != "reserved")
+    {
+      Serial.print(parkingSpots[i].substring(1, parkingSpots[i].length() - 1));
+      return false;
+    }
+  }
+  return true;
+}
+
 void loop()
 {
+  // Retrieve parking spot data
+  if (Firebase.RTDB.get(&fbdo, PARKING_LOT))
+  {
+    Serial.println("Successfully fetched parking lot data.");
+    FirebaseJson &json = fbdo.jsonObject();
+    size_t count = json.iteratorBegin();
+    String key, value;
+    int type;
+
+    for (size_t i = 0; i < count; i++)
+    {
+      json.iteratorGet(i, type, key, value);
+      Serial.println("Key: " + key + ", Value: " + value);
+      if (key == "A1")
+      {
+        parkingSpots[0] = value;
+        parkingSpots[0].substring(1, parkingSpots[i].length() - 1);
+      }
+      else if (key == "A2")
+      {
+        parkingSpots[1] = value;
+        parkingSpots[1].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "A3")
+      {
+        parkingSpots[2] = value;
+        parkingSpots[2].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+      else if (key == "B1")
+      {
+        parkingSpots[3] = value;
+        parkingSpots[3].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "B2")
+      {
+        parkingSpots[4] = value;
+        parkingSpots[4].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "B3")
+      {
+        parkingSpots[5] = value;
+        parkingSpots[5].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "C1")
+      {
+        parkingSpots[6] = value;
+        parkingSpots[6].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "C2")
+      {
+        parkingSpots[7] = value;
+        parkingSpots[7].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+
+      else if (key == "C3")
+      {
+        parkingSpots[8] = value;
+        parkingSpots[8].substring(1, parkingSpots[i].length() - 1);
+        ;
+      }
+    }
+    json.iteratorEnd();
+  }
+  else
+  {
+    Serial.printf("Failed to get parking lot data: %s\n", fbdo.errorReason().c_str());
+  }
+
+  if (areAllSpotsOccupiedOrReserved())
+  {
+    Serial.println("All parking spots are occupied or reserved.");
+    // You can add additional actions here, like updating a status or displaying a message
+    display.clearDisplay();
+    display.drawBitmap(0, 0, cheio_bitmap, 128, 64, SSD1306_WHITE);
+    display.display();
+    if (Firebase.RTDB.setString(&fbdo, "parkingLotOccupancy", "occupied"))
+    {
+      Serial.println("Parking Lot Full");
+    }
+    else
+    {
+      Serial.printf("Failed to update reservation status: %s\n", fbdo.errorReason().c_str());
+    }
+  }
+  else
+  {
+    Serial.println("Not all parking spots are occupied or reserved.");
+    display.clearDisplay();
+    display.drawBitmap(0, 0, livre_bitmap, 128, 64, SSD1306_WHITE);
+    display.display();
+    if (Firebase.RTDB.setString(&fbdo, "parkingLotOccupancy", "free"))
+    {
+      Serial.println("Parking Lot Free");
+    }
+    else
+    {
+      Serial.printf("Failed to update reservation status: %s\n", fbdo.errorReason().c_str());
+    }
+  }
+
   if (digitalRead(MOTION_PIN) == HIGH)
   {
     if (!motionDetected)
     {
       motionCounter++;
       motionDetected = true;
+      motionDetectedTimer = millis();
     }
   }
   else
@@ -252,85 +389,109 @@ void loop()
 
   Serial.println(motionCounter);
 
-  String status = "free";
+  String status;
 
-  // generate 10-microsecond pulse to TRIG pin
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
+  String parkingPath = String(PARKING_LOT) + "/" + String(PARKING_SPOT);
 
-  // measure duration of pulse from ECHO pin
-  duration_us = pulseIn(ECHO_PIN, HIGH);
-  // calculate the distance
-  distance_cm = 0.017 * duration_us;
+  if (millis() - motionDetectedTimer < motionDetectionDuration)
+  {
+    // generate 10-microsecond pulse to TRIG pin
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
 
-  // Variables to store LED states
-  bool led1_state, led2_state, led3_state, led4_state;
+    // measure duration of pulse from ECHO pin
+    duration_us = pulseIn(ECHO_PIN, HIGH);
+    // calculate the distance
+    distance_cm = 0.017 * duration_us;
 
-  if (distance_cm < 4)
-  {
-    led1_state = false;
-    led2_state = false;
-    led3_state = false;
-    led4_state = true;
-    digitalWrite(LED_PIN1, LOW);
-    digitalWrite(LED_PIN2, LOW);
-    digitalWrite(LED_PIN3, LOW);
-    digitalWrite(LED_PIN4, HIGH);
-    // Show "Cheio" bitmap
-    display.clearDisplay();
-    display.drawBitmap(0, 0, cheio_bitmap, 128, 64, SSD1306_WHITE);
-    display.display();
-  }
-  else if (distance_cm < 8)
-  {
-    led1_state = false;
-    led2_state = true;
-    led3_state = true;
-    led4_state = false;
-    digitalWrite(LED_PIN1, LOW);
-    digitalWrite(LED_PIN2, HIGH);
-    digitalWrite(LED_PIN3, HIGH);
-    digitalWrite(LED_PIN4, LOW);
-    display.clearDisplay();
-    display.drawBitmap(0, 0, livre_bitmap, 128, 64, SSD1306_WHITE);
-    display.display();
-  }
-  else if (distance_cm < 12)
-  {
-    led1_state = false;
-    led2_state = true;
-    led3_state = false;
-    led4_state = false;
-    digitalWrite(LED_PIN1, LOW);
-    digitalWrite(LED_PIN2, HIGH);
-    digitalWrite(LED_PIN3, LOW);
-    digitalWrite(LED_PIN4, LOW);
-    display.clearDisplay();
-    display.drawBitmap(0, 0, livre_bitmap, 128, 64, SSD1306_WHITE);
-    display.display();
-  }
-  else
-  {
-    if (Firebase.RTDB.getString(&fbdo, "status"))
+    // Variables to store LED states
+    bool led1_state, led2_state, led3_state, led4_state;
+
+    if (Firebase.RTDB.getString(&fbdo, parkingPath))
     {
       status = fbdo.stringData();
-      Serial.printf("Status: %s\n", status.c_str());
-      if (status == "reserved")
+      Serial.println(status);
+      if (status == "occupied")
       {
-        led1_state = true;
-        led2_state = false;
-        led3_state = false;
-        led4_state = false;
-        digitalWrite(LED_PIN1, HIGH);
-        digitalWrite(LED_PIN2, LOW);
-        digitalWrite(LED_PIN3, LOW);
-        digitalWrite(LED_PIN4, LOW);
-        display.clearDisplay();
-        display.drawBitmap(0, 0, livre_bitmap, 128, 64, SSD1306_WHITE);
-        display.display();
+        Serial.println("Parking Spot Occupied");
+      }
+      else if (status == "reserved")
+      {
+        Serial.println("Parking Spot Reserved");
+      }
+      else if (status == "free")
+      {
+        Serial.println("Parking Spot Free");
+      } // Timer variables
+      unsigned long distanceTimer = 0;
+      unsigned long distanceThreshold = 5000; // 5 seconds
+      bool isSpotOccupied = false;            // Flag to track if the spot is currently occupied
+    }
+
+    if (status == "occupied")
+    {
+      led1_state = false;
+      led2_state = false;
+      led3_state = false;
+      led4_state = true;
+      digitalWrite(LED_PIN1, LOW);
+      digitalWrite(LED_PIN2, LOW);
+      digitalWrite(LED_PIN3, LOW);
+      digitalWrite(LED_PIN4, HIGH);
+
+      // Track the duration of distance greater than 4 cm
+      if (distance_cm > 4)
+      {
+        if (millis() - distanceTimer > distanceThreshold)
+        {
+          // Set the parking spot as "free" if the distance is greater than 4 cm for the threshold duration
+          if (Firebase.RTDB.setString(&fbdo, parkingPath, "free"))
+          {
+            Serial.println("Parking Spot is now Free");
+          }
+          else
+          {
+            Serial.printf("Failed to update parking spot status: %s\n", fbdo.errorReason().c_str());
+          }
+        }
       }
       else
+      {
+        // Reset the timer if the distance is less than 4 cm
+        distanceTimer = millis();
+        isSpotOccupied = true;
+      }
+    }
+    else
+    {
+      if (distance_cm < 4)
+      {
+        led1_state = false;
+        led2_state = false;
+        led3_state = false;
+        led4_state = true;
+        digitalWrite(LED_PIN1, LOW);
+        digitalWrite(LED_PIN2, LOW);
+        digitalWrite(LED_PIN3, LOW);
+        digitalWrite(LED_PIN4, HIGH);
+        if (Firebase.RTDB.setString(&fbdo, parkingPath, "occupied"))
+        {
+          Serial.println("A1 Occupied");
+        }
+      }
+      else if (distance_cm < 8)
+      {
+        led1_state = false;
+        led2_state = true;
+        led3_state = true;
+        led4_state = false;
+        digitalWrite(LED_PIN1, LOW);
+        digitalWrite(LED_PIN2, HIGH);
+        digitalWrite(LED_PIN3, HIGH);
+        digitalWrite(LED_PIN4, LOW);
+      }
+      else if (distance_cm < 12)
       {
         led1_state = false;
         led2_state = true;
@@ -340,94 +501,118 @@ void loop()
         digitalWrite(LED_PIN2, HIGH);
         digitalWrite(LED_PIN3, LOW);
         digitalWrite(LED_PIN4, LOW);
-        display.clearDisplay();
-        display.drawBitmap(0, 0, livre_bitmap, 128, 64, SSD1306_WHITE);
-        display.display();
-      }
-    }
-    else
-    {
-      Serial.printf("Failed to get status: %s\n", fbdo.errorReason().c_str());
-    }
-  }
-
-  currentState = digitalRead(BUTTON_PIN);
-
-  if(lastState != currentState){
-    lastState = currentState;
-    if (distance_cm < 4) // Check if there is a car parked
-    {
-      if (Firebase.RTDB.setString(&fbdo, "status", "using reservation"))
-      {
-        Serial.println("Reservation status updated to 'using reservation'");
       }
       else
       {
-        Serial.printf("Failed to update reservation status: %s\n", fbdo.errorReason().c_str());
+        if (status == "reserved")
+        {
+          led1_state = true;
+          led2_state = false;
+          led3_state = false;
+          led4_state = false;
+          digitalWrite(LED_PIN1, HIGH);
+          digitalWrite(LED_PIN2, LOW);
+          digitalWrite(LED_PIN3, LOW);
+          digitalWrite(LED_PIN4, LOW);
+        }
+        else
+        {
+          led1_state = false;
+          led2_state = true;
+          led3_state = false;
+          led4_state = false;
+          digitalWrite(LED_PIN1, LOW);
+          digitalWrite(LED_PIN2, HIGH);
+          digitalWrite(LED_PIN3, LOW);
+          digitalWrite(LED_PIN4, LOW);
+        }
       }
     }
-    else
-    {
-      Serial.println("No car parked. Reservation status not updated.");
-    }
-  }
+    currentState = digitalRead(BUTTON_PIN);
 
-  // Send data to Firebase every 1 second
-  if (millis() - sendDataPrevMillis > 1000)
+    if (lastState != currentState)
+    {
+      lastState = currentState;
+      if (distance_cm < 4) // Check if there is a car parked
+      {
+        if (Firebase.RTDB.setString(&fbdo, "status", "using reservation"))
+        {
+          Serial.println("Reservation status updated to 'using reservation'");
+        }
+        else
+        {
+          Serial.printf("Failed to update reservation status: %s\n", fbdo.errorReason().c_str());
+        }
+      }
+      else
+      {
+        Serial.println("No car parked. Reservation status not updated.");
+      }
+    }
+
+    // Send data to Firebase every 1 second
+    if (millis() - sendDataPrevMillis > 1000)
+    {
+      sendDataPrevMillis = millis();
+      if (Firebase.ready() && signupOK)
+      {
+        if (Firebase.RTDB.setFloat(&fbdo, "/distance", distance_cm))
+        {
+          Serial.println("Firebase setFloat succeeded");
+        }
+        else
+        {
+          Serial.printf("Firebase setFloat failed: %s\n", fbdo.errorReason().c_str());
+        }
+        if (Firebase.RTDB.setInt(&fbdo, "/nCars", motionCounter))
+        {
+          Serial.println("Firebase setInt succeeded");
+        }
+        else
+        {
+          Serial.printf("Firebase setInt failed: %s\n", fbdo.errorReason().c_str());
+        }
+
+        // Check LED states and update spotOccupance
+        String spotStatus;
+        if (led1_state && !led2_state && !led3_state && !led4_state)
+        {
+          spotStatus = "Reserved";
+        }
+        else if (!led1_state && !led2_state && !led3_state && led4_state)
+        {
+          spotStatus = "Occupied";
+        }
+        else if (!led1_state && led2_state && !led3_state && !led4_state)
+        {
+          spotStatus = "Free";
+        }
+        else
+        {
+          spotStatus = "Parking"; // or handle other cases as needed
+        }
+
+        if (Firebase.RTDB.setString(&fbdo, "/spotOccupance", spotStatus))
+        {
+          Serial.println("Firebase setString succeeded");
+        }
+        else
+        {
+          Serial.printf("Firebase setString failed: %s\n", fbdo.errorReason().c_str());
+        }
+      }
+    }
+
+    // print the value to Serial Monitor
+    Serial.print("distance: ");
+    Serial.print(distance_cm);
+    Serial.println(" cm");
+
+    delay(1000);
+  }
+  else
   {
-    sendDataPrevMillis = millis();
-    if (Firebase.ready() && signupOK)
-    {
-      if (Firebase.RTDB.setFloat(&fbdo, "/distance", distance_cm))
-      {
-        Serial.println("Firebase setFloat succeeded");
-      }
-      else
-      {
-        Serial.printf("Firebase setFloat failed: %s\n", fbdo.errorReason().c_str());
-      }
-      if (Firebase.RTDB.setInt(&fbdo, "/nCars", motionCounter))
-      {
-        Serial.println("Firebase setInt succeeded");
-      }
-      else
-      {
-        Serial.printf("Firebase setInt failed: %s\n", fbdo.errorReason().c_str());
-      }
-
-      // Check LED states and update spotOccupance
-      String spotStatus;
-      if (led1_state && !led2_state && !led3_state && !led4_state)
-      {
-        spotStatus = "Reserved";
-      }
-      else if (!led1_state && !led2_state && !led3_state && led4_state)
-      {
-        spotStatus = "Occupied";
-      }
-      else if (!led1_state && led2_state && !led3_state && !led4_state) {
-        spotStatus = "Free";
-      }
-      else
-      {
-        spotStatus = "Parking"; // or handle other cases as needed
-      }
-
-      if (Firebase.RTDB.setString(&fbdo, "/spotOccupance", spotStatus))
-      {
-        Serial.println("Firebase setString succeeded");
-      }
-      else
-      {
-        Serial.printf("Firebase setString failed: %s\n", fbdo.errorReason().c_str());
-      }
-    }
+    Serial.println("Inactivity");
+    delay(1000);
   }
-
-  // print the value to Serial Monitor
-  Serial.print("distance: ");
-  Serial.print(distance_cm);
-  Serial.println(" cm");
-
-  delay(200);
 }
