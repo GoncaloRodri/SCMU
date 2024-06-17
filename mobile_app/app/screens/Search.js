@@ -15,9 +15,9 @@ import { app } from "../services/firebaseConfig";
 
 const Search = () => {
   const navigation = useNavigation();
-
   const [searchName, setSearchName] = useState("");
   const [parkingLots, setParkingLots] = useState([]);
+  const [filteredParkingLots, setFilteredParkingLots] = useState([]);
 
   useEffect(() => {
     app
@@ -36,8 +36,22 @@ const Search = () => {
           });
         });
         setParkingLots(newParkingLots);
+        setFilteredParkingLots(newParkingLots);
       });
   }, []);
+
+  const handleSearch = (text) => {
+    setSearchName(text);
+    if (text) {
+      const filteredData = parkingLots.filter((item) =>
+        item.title.toLowerCase().includes(text.toLowerCase())
+      );
+      setFilteredParkingLots(filteredData);
+    }
+    else {
+      setFilteredParkingLots(parkingLots);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -46,7 +60,7 @@ const Search = () => {
           placeholder="Search"
           style={styles.input}
           value={searchName}
-          onChangeText={setSearchName}
+          onChangeText={handleSearch}
         />
         <TouchableOpacity
           style={{
@@ -64,7 +78,7 @@ const Search = () => {
       </View>
       <View style={styles.flatListView}>
         <FlatList
-          data={parkingLots}
+          data={filteredParkingLots}
           keyExtractor={(item) => item.id}
           scrollEnabled={true}
           renderItem={({ item }) => (

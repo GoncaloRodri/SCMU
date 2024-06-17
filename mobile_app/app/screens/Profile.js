@@ -48,18 +48,8 @@ const Profile = () => {
             <Text style={styles.settingsText}>Personal Information</Text>
           </TouchableOpacity>
           <View style={{ borderWidth: 0.6, width: "115%" }} />
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Notifications")}
-          >
-            <Text style={styles.settingsText}>Notifications</Text>
-          </TouchableOpacity>
-          <View style={{ borderWidth: 0.6, width: "115%" }} />
           <TouchableOpacity onPress={() => navigation.navigate("Saved")}>
             <Text style={styles.settingsText}>Saved</Text>
-          </TouchableOpacity>
-          <View style={{ borderWidth: 0.6, width: "115%" }} />
-          <TouchableOpacity onPress={() => navigation.navigate("History")}>
-            <Text style={styles.settingsText}>History</Text>
           </TouchableOpacity>
           <View style={{ borderWidth: 0.6, width: "115%" }} />
           <TouchableOpacity onPress={handleLogOut}>
@@ -129,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
-    bottom: "10%",
+    bottom: "25%",
   },
   settingsText: {
     fontSize: 32,
