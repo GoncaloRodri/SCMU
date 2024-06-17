@@ -22,6 +22,7 @@ import ParkingSpots from "./app/screens/ParkingSpots";
 import AddParkingLot from "./app/screens/AddParkingLot"
 
 LogBox.ignoreLogs(["@firebase/auth"]);
+LogBox.ignoreAllLogs();
 
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();

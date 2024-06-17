@@ -63,7 +63,9 @@ const ParkingLot = ({ route }) => {
       <TouchableOpacity
         style={styles.button}
         onPress={() => {
-          alert("GO BOOK SOME SHIT");
+          navigation.navigate("BookParking", {
+            title,
+          });
         }}
       >
         <Text style={styles.buttonText}>Book Parking Spot</Text>

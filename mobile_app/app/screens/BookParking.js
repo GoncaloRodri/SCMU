@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, TouchableOpacity, FlatList, ScrollView, Modal } from 'react-native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  ScrollView,
+  Modal,
+} from "react-native";
 import DatePicker from "react-native-modern-datepicker";
 import { app } from "../services/firebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../contexts/authContexts";
 import moment from "moment";
 
-const BookParking = () => {
+const BookParking = ({ route }) => {
   const [selectedPark, setSelectedPark] = useState(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -34,6 +43,17 @@ const BookParking = () => {
 
     return () => unsubscribe(); // Clean up subscription on component unmount
   }, []);
+
+  useEffect(() => {
+    if (route.params?.title) {
+      const foundPark = parkingLots.find((park) => park.title === route.params.title);
+      if (foundPark) {
+        setSelectedPark(foundPark);
+      }
+    }
+  }, [route.params, parkingLots]);
+
+  console.log(selectedPark);
 
   const handleBooking = async () => {
     if (!selectedPark || !spot || !startDate || !endDate) {
@@ -274,98 +294,98 @@ const BookParking = () => {
 export default BookParking;
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        backgroundColor: "#e0f4fe",
-        padding: 20,
-        justifyContent: "center",
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#e0f4fe",
+    padding: 20,
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "black",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 10,
+  },
+  flatList: {
+    maxHeight: 100, // Limit the height of the park list
+    marginBottom: 20,
+  },
+  parkButton: {
+    backgroundColor: "#ddd",
+    padding: 10,
+    borderRadius: 5,
+    margin: 5,
+    alignItems: "center",
+    flex: 1,
+  },
+  selectedParkButton: {
+    backgroundColor: "#87CEEB",
+  },
+  parkButtonText: {
+    color: "#333",
+    fontWeight: "600",
+  },
+  selectedParkButtonText: {
+    color: "#fff",
+  },
+  inputContainer: {
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 18,
+    color: "#555",
+  },
+  buttonContainer: {
+    marginTop: 20,
+  },
+  buttonSpacing: {
+    marginVertical: 20, // Add vertical margin between date button and booking button
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    width: "90%",
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    title: {
-        fontSize: 32,
-        fontWeight: "bold",
-        color: "black",
-        textAlign: "center",
-        marginBottom: 20,
-    },
-    label: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: "#333",
-        marginBottom: 10,
-    },
-    flatList: {
-        maxHeight: 100, // Limit the height of the park list
-        marginBottom: 20,
-    },
-    parkButton: {
-        backgroundColor: "#ddd",
-        padding: 10,
-        borderRadius: 5,
-        margin: 5,
-        alignItems: "center",
-        flex: 1,
-    },
-    selectedParkButton: {
-        backgroundColor: "#87CEEB",
-    },
-    parkButtonText: {
-        color: "#333",
-        fontWeight: "600",
-    },
-    selectedParkButtonText: {
-        color: "#fff",
-    },
-    inputContainer: {
-        marginBottom: 10,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: "#ddd",
-        borderRadius: 5,
-        padding: 10,
-        fontSize: 18,
-        color: "#555",
-    },
-    buttonContainer: {
-        marginTop: 20,
-    },
-    buttonSpacing: {
-        marginVertical: 20, // Add vertical margin between date button and booking button
-    },
-    modalView: {
-        margin: 20,
-        backgroundColor: "white",
-        borderRadius: 20,
-        width: "90%",
-        padding: 35,
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    centerText: {
-        textAlign: "center",
-    },
-    dateButton: {
-        padding: 10,
-        borderRadius: 10,
-        borderColor: "black",
-        borderWidth: 1,
-        marginTop: 10,
-        alignItems: "center",
-    },
-    dateButtonContainer: {
-        marginBottom: 20, // Add space between the date button and the next section
-    },
-    centeredView: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 22,
-    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  centerText: {
+    textAlign: "center",
+  },
+  dateButton: {
+    padding: 10,
+    borderRadius: 10,
+    borderColor: "black",
+    borderWidth: 1,
+    marginTop: 10,
+    alignItems: "center",
+  },
+  dateButtonContainer: {
+    marginBottom: 20, // Add space between the date button and the next section
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
 });
