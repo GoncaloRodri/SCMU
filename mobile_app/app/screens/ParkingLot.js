@@ -15,20 +15,33 @@ const ParkingLot = ({ route }) => {
   const { description, title, location, link } = route.params.parkingLot;
   const { userData } = useAuth();
   const [isSaved, setIsSaved] = useState();
-
-  console.log(isSaved);
+  const [userSavedParks, setUserSavedParks] = useState([]);
 
   useEffect(() => {
-    if (userData && Array.isArray(userData.saved)) {
-      setIsSaved(userData.saved.includes(title));
+    if (userData && userData.email) {
+      app
+        .firestore()
+        .collection("users")
+        .doc(userData.email)
+        .get()
+        .then((doc) => {
+          setUserSavedParks(doc.data().saved);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data: ", error);
+        });
     }
-  }, [userData, title]);
+  }, [isSaved, userData]);
+
+  useEffect(() => {
+    setIsSaved(userSavedParks.includes(title));
+  }, [userSavedParks]);
 
   const navigation = useNavigation();
 
   const saveSpot = async () => {
-    if (userData && Array.isArray(userData.saved)) {
-      let updatedSaved = [...userData.saved];
+    if (userData && Array.isArray(userSavedParks)) {
+      let updatedSaved = [...userSavedParks];
       if (!updatedSaved.includes(title)) {
         updatedSaved.push(title);
         try {
