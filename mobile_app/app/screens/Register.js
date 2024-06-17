@@ -46,6 +46,13 @@ const Register = () => {
     app.firestore().collection("users").doc(email).set({
       username,
       email,
+      address: "",
+      carBrand: "",
+      carModel: "",
+      carColor: "",
+      licensePlate: "",
+      saved: [],
+      role: "client",
     });
   };
 
